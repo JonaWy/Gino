@@ -1,13 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
-import { getHorse } from "@/lib/horse";
+import { requireHorse } from "@/lib/horse";
 import { VitalForm } from "@/components/history/vital-form";
 import { VitalCharts } from "@/components/history/vital-charts";
 import { VitalTable } from "@/components/history/vital-table";
 import type { VitalRecord } from "@/types/database";
 
 export default async function VitalwertePage() {
-  const horse = await getHorse();
-  if (!horse) return <p>Kein Pferd gefunden.</p>;
+  const horse = await requireHorse();
 
   const supabase = await createClient();
   const { data: records } = await supabase
@@ -20,7 +19,7 @@ export default async function VitalwertePage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-serif text-2xl font-semibold">
+          <h2 className="hidden font-serif text-2xl font-semibold md:block">
             Vital- & Finanzhistorie
           </h2>
           <p className="text-sm text-muted-foreground">

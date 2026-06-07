@@ -24,16 +24,18 @@ import {
   APPOINTMENT_TYPE_COLORS,
 } from "@/lib/labels";
 import { formatCurrency } from "@/lib/costs";
-import type { Appointment } from "@/types/database";
+import type { Appointment, Contact } from "@/types/database";
 import { Check, Trash2 } from "lucide-react";
 import { AppointmentForm } from "./appointment-form";
 
 export function AppointmentList({
   appointments,
   horseId,
+  contacts,
 }: {
   appointments: Appointment[];
   horseId: string;
+  contacts: Contact[];
 }) {
   const [pending, startTransition] = useTransition();
 
@@ -76,7 +78,7 @@ export function AppointmentList({
               </p>
             )}
             <div className="flex flex-wrap gap-2">
-              <AppointmentForm horseId={horseId} appointment={appt} />
+              <AppointmentForm horseId={horseId} contacts={contacts} appointment={appt} />
               {appt.status === "geplant" && (
                 <Dialog>
                   <DialogTrigger

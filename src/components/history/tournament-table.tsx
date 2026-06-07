@@ -13,20 +13,35 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import {
+  MobileListCard,
+  MobileListRow,
+} from "@/components/ui/mobile-list-card";
+import { contactNameById } from "@/lib/contacts";
 import { formatCurrency } from "@/lib/costs";
-import type { Tournament } from "@/types/database";
+import type { Contact, Tournament } from "@/types/database";
 import { Trash2 } from "lucide-react";
 
 export function TournamentTable({
   tournaments,
+  contacts,
 }: {
   tournaments: Tournament[];
+  contacts: Contact[];
 }) {
   const [pending, startTransition] = useTransition();
   const totalPrize = tournaments.reduce(
     (s, t) => s + Number(t.prize_money || 0),
     0
   );
+
+  function riderLabel(t: Tournament) {
+    return (
+      contactNameById(contacts, t.contact_id ?? t.rider_id) ??
+      t.rider_name ??
+      "–"
+    );
+  }
 
   if (tournaments.length === 0) {
     return (
@@ -38,7 +53,50 @@ export function TournamentTable({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="overflow-x-auto rounded-lg border">
+      <div className="flex flex-col gap-3 md:hidden">
+        {tournaments.map((t) => (
+          <MobileListCard
+            key={t.id}
+            actions={
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                disabled={pending}
+                className="text-destructive"
+                onClick={() =>
+                  startTransition(async () => {
+                    await deleteTournament(t.id);
+                  })
+                }
+              >
+                <Trash2 />
+              </Button>
+            }
+          >
+            <div className="flex flex-col gap-1">
+              <p className="font-medium">{t.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {format(parseISO(t.date), "dd.MM.yyyy", { locale: de })}
+                {t.location ? ` · ${t.location}` : ""}
+              </p>
+            </div>
+            <MobileListRow label="Disziplin" value={t.discipline ?? "–"} />
+            <MobileListRow label="Bewertung" value={t.rating ?? "–"} />
+            <MobileListRow label="Platz" value={t.placement ?? "–"} />
+            <MobileListRow label="Reiter" value={riderLabel(t)} />
+            <MobileListRow
+              label="Preisgeld"
+              value={
+                t.prize_money
+                  ? formatCurrency(Number(t.prize_money))
+                  : "–"
+              }
+            />
+          </MobileListCard>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-lg border md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -64,7 +122,7 @@ export function TournamentTable({
                 <TableCell>{t.discipline ?? "–"}</TableCell>
                 <TableCell>{t.rating ?? "–"}</TableCell>
                 <TableCell>{t.placement ?? "–"}</TableCell>
-                <TableCell>{t.rider_name ?? "–"}</TableCell>
+                <TableCell>{riderLabel(t)}</TableCell>
                 <TableCell>
                   {t.prize_money
                     ? formatCurrency(Number(t.prize_money))

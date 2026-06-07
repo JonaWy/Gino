@@ -63,11 +63,11 @@ export function VitalCharts({ records }: { records: VitalRecord[] }) {
         return (
           <div key={chart.key} className="flex flex-col gap-2">
             <h3 className="text-sm font-medium">{chart.title}</h3>
-            <ChartContainer config={chartConfig} className="h-48 w-full">
-              <LineChart data={data}>
+            <ChartContainer config={chartConfig} className="h-44 w-full sm:h-48">
+              <LineChart data={data} margin={{ left: -8, right: 4 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                <YAxis tick={{ fontSize: 10 }} width={36} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Line
                   type="monotone"

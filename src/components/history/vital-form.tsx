@@ -31,7 +31,7 @@ export function VitalForm({ horseId }: { horseId: string }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button>
+          <Button className="w-full sm:w-auto">
             <Plus />
             Vitalwert erfassen
           </Button>

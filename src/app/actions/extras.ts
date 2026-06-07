@@ -4,10 +4,51 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/horse";
 
+async function getContactName(contactId: string | null) {
+  if (!contactId) return null;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("contacts")
+    .select("name")
+    .eq("id", contactId)
+    .single();
+  return data?.name ?? null;
+}
+
+function trimOrNull(value: FormDataEntryValue | null): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function contactFieldsFromForm(formData: FormData) {
+  const role = formData.get("role") as string;
+  const fields: Record<string, string | null> = {
+    role,
+    name: (formData.get("name") as string).trim(),
+    phone: trimOrNull(formData.get("phone")),
+    email: role === "reiter" ? null : trimOrNull(formData.get("email")),
+    notes: trimOrNull(formData.get("notes")),
+  };
+
+  if (role === "reiter") {
+    const license = trimOrNull(formData.get("license_number"));
+    if (license) fields.license_number = license;
+  }
+
+  return fields;
+}
+
 export async function createHealthRecord(formData: FormData) {
   const supabase = await createClient();
   const user = await getCurrentUser();
   if (!user) return { error: "Nicht angemeldet" };
+
+  const contactId = (formData.get("contact_id") as string) || null;
+  const vetName =
+    (await getContactName(contactId)) ||
+    (formData.get("vet_name") as string) ||
+    null;
 
   const { error } = await supabase.from("health_records").insert({
     user_id: user.id,
@@ -16,7 +57,8 @@ export async function createHealthRecord(formData: FormData) {
     product_name: (formData.get("product_name") as string) || null,
     date: formData.get("date") as string,
     next_due_date: (formData.get("next_due_date") as string) || null,
-    vet_name: (formData.get("vet_name") as string) || null,
+    contact_id: contactId,
+    vet_name: vetName,
     notes: (formData.get("notes") as string) || null,
   });
 
@@ -47,6 +89,10 @@ export async function createTrainingLog(formData: FormData) {
   const user = await getCurrentUser();
   if (!user) return { error: "Nicht angemeldet" };
 
+  const riderContactId =
+    (formData.get("rider_contact_id") as string) || null;
+  const riderName = await getContactName(riderContactId);
+
   const { error } = await supabase.from("training_logs").insert({
     user_id: user.id,
     horse_id: formData.get("horse_id") as string,
@@ -57,7 +103,10 @@ export async function createTrainingLog(formData: FormData) {
     focus: (formData.get("focus") as string) || null,
     intensity: (formData.get("intensity") as string) || null,
     notes: (formData.get("notes") as string) || null,
-    rider_name: (formData.get("rider_name") as string) || null,
+    rider_contact_id: riderContactId,
+    trainer_contact_id:
+      (formData.get("trainer_contact_id") as string) || null,
+    rider_name: riderName,
   });
 
   if (error) return { error: error.message };
@@ -86,19 +135,46 @@ export async function createContact(formData: FormData) {
   const user = await getCurrentUser();
   if (!user) return { error: "Nicht angemeldet" };
 
-  const { error } = await supabase.from("contacts").insert({
-    user_id: user.id,
-    horse_id: formData.get("horse_id") as string,
-    role: formData.get("role") as string,
-    name: formData.get("name") as string,
-    phone: (formData.get("phone") as string) || null,
-    email: (formData.get("email") as string) || null,
-    notes: (formData.get("notes") as string) || null,
-  });
+  const { data, error } = await supabase
+    .from("contacts")
+    .insert({
+      user_id: user.id,
+      horse_id: formData.get("horse_id") as string,
+      ...contactFieldsFromForm(formData),
+    })
+    .select()
+    .single();
 
   if (error) return { error: error.message };
-  revalidatePath("/kontakte");
-  return { success: true };
+  revalidatePath("/kontakte", "page");
+  revalidatePath("/turniere");
+  revalidatePath("/training");
+  revalidatePath("/gesundheit");
+  revalidatePath("/kalender");
+  return { success: true, contact: data };
+}
+
+export async function updateContact(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getCurrentUser();
+  if (!user) return { error: "Nicht angemeldet" };
+
+  const id = formData.get("id") as string;
+  const { data, error } = await supabase
+    .from("contacts")
+    .update(contactFieldsFromForm(formData))
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
+  revalidatePath("/kontakte", "page");
+  revalidatePath("/turniere");
+  revalidatePath("/training");
+  revalidatePath("/gesundheit");
+  revalidatePath("/kalender");
+  return { success: true, contact: data };
 }
 
 export async function deleteContact(id: string) {
@@ -113,8 +189,17 @@ export async function deleteContact(id: string) {
     .eq("user_id", user.id);
 
   if (error) return { error: error.message };
-  revalidatePath("/kontakte");
+  revalidatePath("/kontakte", "page");
+  revalidatePath("/turniere");
+  revalidatePath("/training");
+  revalidatePath("/gesundheit");
+  revalidatePath("/kalender");
   return { success: true };
+}
+
+export async function createRider(formData: FormData) {
+  formData.set("role", "reiter");
+  return createContact(formData);
 }
 
 export async function createDocument(formData: FormData) {
@@ -165,26 +250,6 @@ export async function deleteDocument(id: string) {
 
   if (error) return { error: error.message };
   revalidatePath("/dokumente");
-  return { success: true };
-}
-
-export async function createRider(formData: FormData) {
-  const supabase = await createClient();
-  const user = await getCurrentUser();
-  if (!user) return { error: "Nicht angemeldet" };
-
-  const { error } = await supabase.from("riders").insert({
-    user_id: user.id,
-    horse_id: formData.get("horse_id") as string,
-    name: formData.get("name") as string,
-    license_number: (formData.get("license_number") as string) || null,
-    phone: (formData.get("phone") as string) || null,
-    notes: (formData.get("notes") as string) || null,
-  });
-
-  if (error) return { error: error.message };
-  revalidatePath("/turniere");
-  revalidatePath("/einstellungen");
   return { success: true };
 }
 

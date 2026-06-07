@@ -17,26 +17,21 @@ Deutschsprachige Web-App zur Verwaltung deines Pferdes: Dashboard, Kalender, Tur
 
 ## Setup
 
-### 1. Supabase-Projekt
+### 1. Supabase-Projekt (bereits eingerichtet)
 
-1. Erstelle ein Projekt auf [supabase.com](https://supabase.com)
-2. Führe die Migration aus: `supabase/migrations/001_initial_schema.sql` (SQL Editor)
-3. Erstelle Storage-Buckets:
-   - `horse-images` (öffentlich)
-   - `documents` (privat)
+- **Projekt:** [Gino auf Supabase](https://supabase.com/dashboard/project/dovigxelwheqdvqonezj)
+- **Region:** eu-central-1
+- **Schema:** Alle Tabellen, RLS-Policies und Storage-Buckets sind migriert
 
 ### 2. Umgebungsvariablen
+
+Die Datei `.env.local` ist bereits mit den Projekt-Keys konfiguriert. Für neue Entwickler:
 
 ```bash
 cp .env.local.example .env.local
 ```
 
-Trage ein:
-
-```
-NEXT_PUBLIC_SUPABASE_URL=https://dein-projekt.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=dein-anon-key
-```
+Dann die Werte aus dem [Supabase Dashboard](https://supabase.com/dashboard/project/dovigxelwheqdvqonezj/settings/api) eintragen.
 
 ### 3. Entwicklung
 

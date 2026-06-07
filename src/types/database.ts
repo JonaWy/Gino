@@ -4,6 +4,7 @@ export type AppointmentType =
   | "schmied"
   | "turnier"
   | "training"
+  | "physiotherapie"
   | "sonstiges";
 
 export type AppointmentStatus = "geplant" | "erledigt" | "abgesagt";
@@ -17,8 +18,11 @@ export type ExpenseCategory =
   | "sonstiges";
 
 export type ContactRole =
+  | "reiter"
   | "tierarzt"
   | "schmied"
+  | "trainer"
+  | "physiotherapeut"
   | "stall"
   | "transport"
   | "sonstiges";
@@ -80,6 +84,7 @@ export interface Appointment {
   reminder_days_before: number | null;
   estimated_cost: number | null;
   actual_cost: number | null;
+  contact_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -96,6 +101,7 @@ export interface Tournament {
   placement: number | null;
   rider_name: string | null;
   rider_id: string | null;
+  contact_id: string | null;
   prize_money: number | null;
   notes: string | null;
   created_at: string;
@@ -156,6 +162,7 @@ export interface HealthRecord {
   date: string;
   next_due_date: string | null;
   vet_name: string | null;
+  contact_id: string | null;
   notes: string | null;
   created_at: string;
 }
@@ -170,6 +177,8 @@ export interface TrainingLog {
   intensity: string | null;
   notes: string | null;
   rider_name: string | null;
+  rider_contact_id: string | null;
+  trainer_contact_id: string | null;
   created_at: string;
 }
 
@@ -181,6 +190,7 @@ export interface Contact {
   name: string;
   phone: string | null;
   email: string | null;
+  license_number: string | null;
   notes: string | null;
   created_at: string;
 }

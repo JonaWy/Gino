@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getHorse } from "@/lib/horse";
+import { requireHorse } from "@/lib/horse";
 import { HorseHero } from "@/components/dashboard/horse-hero";
 import { NextAppointment } from "@/components/dashboard/next-appointment";
 import { QuickStats } from "@/components/dashboard/quick-stats";
@@ -9,14 +9,7 @@ import { getCurrentMonthForecast } from "@/lib/costs";
 import type { Appointment } from "@/types/database";
 
 export default async function DashboardPage() {
-  const horse = await getHorse();
-  if (!horse) {
-    return (
-      <p className="text-muted-foreground">
-        Kein Pferd gefunden. Bitte registriere dich erneut.
-      </p>
-    );
-  }
+  const horse = await requireHorse();
 
   const supabase = await createClient();
 

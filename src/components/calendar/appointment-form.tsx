@@ -21,12 +21,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { APPOINTMENT_TYPE_LABELS } from "@/lib/labels";
-import type { Appointment, AppointmentType } from "@/types/database";
+import { ContactSelect } from "@/components/contact-select";
+import { APPOINTMENT_CONTACT_ROLE } from "@/lib/contacts";
+import { APPOINTMENT_TYPE_LABELS, CONTACT_ROLE_LABELS } from "@/lib/labels";
+import type { Appointment, AppointmentType, Contact } from "@/types/database";
 import { Plus } from "lucide-react";
 
 interface AppointmentFormProps {
   horseId: string;
+  contacts: Contact[];
   appointment?: Appointment;
   defaultDate?: string;
   suggestedCost?: number | null;
@@ -34,6 +37,7 @@ interface AppointmentFormProps {
 
 export function AppointmentForm({
   horseId,
+  contacts,
   appointment,
   defaultDate,
   suggestedCost,
@@ -43,7 +47,9 @@ export function AppointmentForm({
   const [type, setType] = useState<AppointmentType>(
     appointment?.type ?? "training"
   );
+  const [contactId, setContactId] = useState(appointment?.contact_id ?? "");
   const isEdit = !!appointment;
+  const contactRole = APPOINTMENT_CONTACT_ROLE[type];
 
   const defaultStartsAt = appointment?.starts_at
     ? appointment.starts_at.slice(0, 16)
@@ -54,6 +60,7 @@ export function AppointmentForm({
   function handleSubmit(formData: FormData) {
     formData.set("horse_id", horseId);
     formData.set("type", type);
+    if (contactId) formData.set("contact_id", contactId);
     startTransition(async () => {
       const result = isEdit
         ? await updateAppointment(formData)
@@ -84,7 +91,12 @@ export function AppointmentForm({
             <Label htmlFor="type">Typ</Label>
             <Select
               value={type}
-              onValueChange={(v) => v && setType(v as AppointmentType)}
+              onValueChange={(v) => {
+                if (v) {
+                  setType(v as AppointmentType);
+                  setContactId("");
+                }
+              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -100,6 +112,16 @@ export function AppointmentForm({
               </SelectContent>
             </Select>
           </div>
+          {contactRole && (
+            <ContactSelect
+              contacts={contacts}
+              role={contactRole}
+              value={contactId}
+              onValueChange={setContactId}
+              label={CONTACT_ROLE_LABELS[contactRole]}
+              id="appointment-contact"
+            />
+          )}
           <div className="flex flex-col gap-2">
             <Label htmlFor="title">Titel</Label>
             <Input

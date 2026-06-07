@@ -5,26 +5,25 @@ import {
   updateHorse,
   uploadHorseImage,
 } from "@/app/actions/horses";
-import { createRider, updateCostDefault } from "@/app/actions/extras";
+import { updateCostDefault } from "@/app/actions/extras";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EXPENSE_CATEGORY_LABELS } from "@/lib/labels";
-import type { Horse, CostDefault, Rider } from "@/types/database";
+import type { Horse, CostDefault } from "@/types/database";
 import Image from "next/image";
+import Link from "next/link";
 
 export function SettingsForm({
   horse,
   email,
   costDefaults,
-  riders,
 }: {
   horse: Horse;
   email: string;
   costDefaults: CostDefault[];
-  riders: Rider[];
 }) {
   const [pending, startTransition] = useTransition();
 
@@ -192,38 +191,18 @@ export function SettingsForm({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Reiter</CardTitle>
+          <CardTitle className="text-base">Personen</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {riders.map((r) => (
-            <p key={r.id} className="text-sm">
-              {r.name}
-              {r.license_number && ` · ${r.license_number}`}
-            </p>
-          ))}
-          <form
-            action={(fd) =>
-              startTransition(async () => {
-                await createRider(fd);
-              })
-            }
-            className="flex flex-col gap-4"
-          >
-            <input type="hidden" name="horse_id" value={horse.id} />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="rider_name">Name</Label>
-                <Input id="rider_name" name="name" required />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="license">Lizenz-Nr.</Label>
-                <Input id="license" name="license_number" />
-              </div>
-            </div>
-            <Button type="submit" variant="outline" size="sm" disabled={pending}>
-              Reiter hinzufügen
-            </Button>
-          </form>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Reiter, Tierärzte, Schmiede, Trainer und Physiotherapeuten werden
+            unter{" "}
+            <Link href="/kontakte" className="text-primary underline-offset-4 hover:underline">
+              Kontakte
+            </Link>{" "}
+            verwaltet und können in Turnieren, Training, Gesundheit und Kalender
+            ausgewählt werden.
+          </p>
         </CardContent>
       </Card>
 

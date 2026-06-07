@@ -15,13 +15,13 @@ export function QuickActions() {
       <CardHeader>
         <CardTitle className="text-base">Schnellaktionen</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-wrap gap-2">
+      <CardContent className="flex flex-col gap-2 p-4 sm:flex-row sm:flex-wrap">
         {actions.map((action) => (
           <Button
             key={action.href}
             render={<Link href={action.href} />}
             variant="outline"
-            size="sm"
+            className="w-full justify-start sm:w-auto"
           >
             <action.icon />
             {action.label}

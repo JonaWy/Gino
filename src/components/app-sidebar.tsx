@@ -2,19 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Calendar,
-  Heart,
-  Home,
-  Trophy,
-  Activity,
-  Euro,
-  FileText,
-  Phone,
-  Dumbbell,
-  Settings,
-  LogOut,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -27,20 +15,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { ALL_NAV_ITEMS, isNavActive } from "@/lib/navigation";
 import { logout } from "@/app/actions/auth";
-
-const navItems = [
-  { href: "/", label: "Dashboard", icon: Home },
-  { href: "/kalender", label: "Kalender", icon: Calendar },
-  { href: "/turniere", label: "Turniere", icon: Trophy },
-  { href: "/vitalwerte", label: "Vitalwerte", icon: Activity },
-  { href: "/gesundheit", label: "Gesundheit", icon: Heart },
-  { href: "/training", label: "Training", icon: Dumbbell },
-  { href: "/kosten", label: "Kosten", icon: Euro },
-  { href: "/dokumente", label: "Dokumente", icon: FileText },
-  { href: "/kontakte", label: "Kontakte", icon: Phone },
-  { href: "/einstellungen", label: "Einstellungen", icon: Settings },
-];
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -62,15 +38,11 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
+              {ALL_NAV_ITEMS.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     render={<Link href={item.href} />}
-                    isActive={
-                      item.href === "/"
-                        ? pathname === "/"
-                        : pathname.startsWith(item.href)
-                    }
+                    isActive={isNavActive(pathname, item.href)}
                   >
                     <item.icon />
                     <span>{item.label}</span>

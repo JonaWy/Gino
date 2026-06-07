@@ -23,28 +23,8 @@ export async function register(formData: FormData) {
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) return { error: error.message };
 
-  if (data.user) {
-    await supabase.from("horses").insert({
-      user_id: data.user.id,
-      name: "Gino",
-    });
-
-    const horseId = (
-      await supabase
-        .from("horses")
-        .select("id")
-        .eq("user_id", data.user.id)
-        .single()
-    ).data?.id;
-
-    if (horseId) {
-      await supabase.from("cost_defaults").insert([
-        { user_id: data.user.id, horse_id: horseId, category: "tierarzt", default_amount: 145 },
-        { user_id: data.user.id, horse_id: horseId, category: "schmied", default_amount: 80 },
-        { user_id: data.user.id, horse_id: horseId, category: "turnier", default_amount: 150 },
-      ]);
-    }
-  }
+  // Pferd wird beim ersten Login automatisch angelegt (getOrCreateHorse),
+  // falls hier noch keine Session besteht (z. B. E-Mail-Bestätigung).
 
   redirect("/");
 }

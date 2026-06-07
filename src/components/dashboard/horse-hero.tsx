@@ -31,7 +31,7 @@ export function HorseHero({ horse }: { horse: Horse }) {
           )}
         </div>
         <div className="flex flex-col gap-2 p-6">
-          <h2 className="font-serif text-3xl font-semibold tracking-wide">
+          <h2 className="font-serif text-2xl font-semibold tracking-wide sm:text-3xl">
             {horse.name}
           </h2>
           <div className="flex flex-wrap gap-2">

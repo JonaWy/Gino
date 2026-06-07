@@ -6,15 +6,17 @@ import { de } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { AppointmentList } from "./appointment-list";
 import { AppointmentForm } from "./appointment-form";
-import type { Appointment } from "@/types/database";
+import type { Appointment, Contact } from "@/types/database";
 import { APPOINTMENT_TYPE_COLORS } from "@/lib/labels";
 
 export function CalendarView({
   appointments,
   horseId,
+  contacts,
 }: {
   appointments: Appointment[];
   horseId: string;
+  contacts: Contact[];
 }) {
   const [selected, setSelected] = useState<Date | undefined>(new Date());
 
@@ -59,7 +61,7 @@ export function CalendarView({
         </div>
       </div>
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="font-medium">
             {selected
               ? format(selected, "EEEE, d. MMMM", { locale: de })
@@ -67,12 +69,14 @@ export function CalendarView({
           </h3>
           <AppointmentForm
             horseId={horseId}
+            contacts={contacts}
             defaultDate={selected ? format(selected, "yyyy-MM-dd") : undefined}
           />
         </div>
         <AppointmentList
           appointments={dayAppointments}
           horseId={horseId}
+          contacts={contacts}
         />
       </div>
     </div>

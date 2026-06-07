@@ -34,10 +34,16 @@ export function CostTabs({
 
   return (
     <Tabs defaultValue="prognose">
-      <TabsList>
-        <TabsTrigger value="prognose">Prognose</TabsTrigger>
-        <TabsTrigger value="historie">Historie</TabsTrigger>
-        <TabsTrigger value="durchschnitte">Durchschnitte</TabsTrigger>
+      <TabsList className="w-full overflow-x-auto">
+        <TabsTrigger value="prognose" className="min-w-[5.5rem]">
+          Prognose
+        </TabsTrigger>
+        <TabsTrigger value="historie" className="min-w-[5.5rem]">
+          Historie
+        </TabsTrigger>
+        <TabsTrigger value="durchschnitte" className="min-w-[6.5rem]">
+          Durchschnitte
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="prognose" className="flex flex-col gap-4">
@@ -54,13 +60,13 @@ export function CostTabs({
           </CardContent>
         </Card>
         {forecast.length > 0 ? (
-          <ChartContainer config={chartConfig} className="h-72 w-full">
-            <BarChart data={forecast}>
+          <ChartContainer config={chartConfig} className="h-56 w-full sm:h-72">
+            <BarChart data={forecast} margin={{ left: -8, right: 4 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="monthLabel" tick={{ fontSize: 11 }} />
-              <YAxis tickFormatter={(v) => `${v}€`} />
+              <XAxis dataKey="monthLabel" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+              <YAxis tickFormatter={(v) => `${v}€`} width={40} tick={{ fontSize: 10 }} />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Legend />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
               <Bar dataKey="tierarzt" stackId="a" fill="var(--color-tierarzt)" />
               <Bar dataKey="schmied" stackId="a" fill="var(--color-schmied)" />
               <Bar dataKey="turnier" stackId="a" fill="var(--color-turnier)" />
@@ -75,13 +81,13 @@ export function CostTabs({
 
       <TabsContent value="historie" className="flex flex-col gap-4">
         {history.length > 0 ? (
-          <ChartContainer config={chartConfig} className="h-72 w-full">
-            <BarChart data={history}>
+          <ChartContainer config={chartConfig} className="h-56 w-full sm:h-72">
+            <BarChart data={history} margin={{ left: -8, right: 4 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="monthLabel" tick={{ fontSize: 11 }} />
-              <YAxis tickFormatter={(v) => `${v}€`} />
+              <XAxis dataKey="monthLabel" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+              <YAxis tickFormatter={(v) => `${v}€`} width={40} tick={{ fontSize: 10 }} />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Legend />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
               <Bar dataKey="tierarzt" stackId="a" fill="var(--color-tierarzt)" />
               <Bar dataKey="schmied" stackId="a" fill="var(--color-schmied)" />
               <Bar dataKey="turnier" stackId="a" fill="var(--color-turnier)" />

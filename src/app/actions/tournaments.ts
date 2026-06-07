@@ -4,10 +4,24 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/horse";
 
+async function getContactName(contactId: string | null) {
+  if (!contactId) return null;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("contacts")
+    .select("name")
+    .eq("id", contactId)
+    .single();
+  return data?.name ?? null;
+}
+
 export async function createTournament(formData: FormData) {
   const supabase = await createClient();
   const user = await getCurrentUser();
   if (!user) return { error: "Nicht angemeldet" };
+
+  const contactId = (formData.get("contact_id") as string) || null;
+  const riderName = await getContactName(contactId);
 
   const { error } = await supabase.from("tournaments").insert({
     user_id: user.id,
@@ -20,8 +34,9 @@ export async function createTournament(formData: FormData) {
     placement: formData.get("placement")
       ? Number(formData.get("placement"))
       : null,
-    rider_name: (formData.get("rider_name") as string) || null,
-    rider_id: (formData.get("rider_id") as string) || null,
+    contact_id: contactId,
+    rider_id: contactId,
+    rider_name: riderName,
     prize_money: formData.get("prize_money")
       ? Number(formData.get("prize_money"))
       : 0,

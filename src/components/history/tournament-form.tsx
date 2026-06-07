@@ -6,14 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ContactSelect } from "@/components/contact-select";
 import {
   Dialog,
   DialogContent,
@@ -21,26 +14,29 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import type { Rider } from "@/types/database";
+import type { Contact } from "@/types/database";
 import { Plus } from "lucide-react";
 
 export function TournamentForm({
   horseId,
-  riders,
+  contacts,
 }: {
   horseId: string;
-  riders: Rider[];
+  contacts: Contact[];
 }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
-  const [riderId, setRiderId] = useState("");
+  const [contactId, setContactId] = useState("");
 
   function handleSubmit(formData: FormData) {
     formData.set("horse_id", horseId);
-    if (riderId) formData.set("rider_id", riderId);
+    if (contactId) formData.set("contact_id", contactId);
     startTransition(async () => {
       const result = await createTournament(formData);
-      if (!result?.error) setOpen(false);
+      if (!result?.error) {
+        setOpen(false);
+        setContactId("");
+      }
     });
   }
 
@@ -48,7 +44,7 @@ export function TournamentForm({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button>
+          <Button className="w-full sm:w-auto">
             <Plus />
             Turnier eintragen
           </Button>
@@ -83,24 +79,14 @@ export function TournamentForm({
             <Label htmlFor="placement">Platzierung</Label>
             <Input id="placement" name="placement" type="number" min="1" />
           </div>
-          <div className="flex flex-col gap-2">
-            <Label>Reiter</Label>
-            <Select value={riderId} onValueChange={(v) => setRiderId(v ?? "")}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Reiter wählen" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {riders.map((r) => (
-                    <SelectItem key={r.id} value={r.id}>
-                      {r.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <Input name="rider_name" placeholder="oder Reitername eingeben" />
-          </div>
+          <ContactSelect
+            contacts={contacts}
+            role="reiter"
+            value={contactId}
+            onValueChange={setContactId}
+            label="Reiter"
+            id="tournament-rider"
+          />
           <div className="flex flex-col gap-2">
             <Label htmlFor="prize_money">Preisgeld (€)</Label>
             <Input id="prize_money" name="prize_money" type="number" step="0.01" min="0" />

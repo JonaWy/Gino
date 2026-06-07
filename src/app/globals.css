@@ -132,3 +132,10 @@
     font-family: var(--font-serif), ui-serif, Georgia, serif;
   }
 }
+
+@layer utilities {
+  .touch-target {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+}

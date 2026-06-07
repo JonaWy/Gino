@@ -13,6 +13,7 @@ export const APPOINTMENT_TYPE_LABELS: Record<AppointmentType, string> = {
   schmied: "Schmied",
   turnier: "Turnier",
   training: "Training",
+  physiotherapie: "Physiotherapie",
   sonstiges: "Sonstiges",
 };
 
@@ -32,8 +33,11 @@ export const EXPENSE_CATEGORY_LABELS: Record<ExpenseCategory, string> = {
 };
 
 export const CONTACT_ROLE_LABELS: Record<ContactRole, string> = {
+  reiter: "Reiter",
   tierarzt: "Tierarzt",
   schmied: "Schmied",
+  trainer: "Trainer",
+  physiotherapeut: "Physiotherapeut",
   stall: "Stall",
   transport: "Transport",
   sonstiges: "Sonstiges",
@@ -61,6 +65,7 @@ export const APPOINTMENT_TYPE_COLORS: Record<AppointmentType, string> = {
   schmied: "bg-amber-700",
   turnier: "bg-yellow-500",
   training: "bg-blue-500",
+  physiotherapie: "bg-violet-500",
   sonstiges: "bg-gray-400",
 };
 

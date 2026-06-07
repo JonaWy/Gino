@@ -59,6 +59,8 @@ export async function createAppointment(formData: FormData) {
     estimatedCost = await getSuggestedCost(horseId, type);
   }
 
+  const contactId = (formData.get("contact_id") as string) || null;
+
   const { error } = await supabase.from("appointments").insert({
     user_id: user.id,
     horse_id: horseId,
@@ -70,6 +72,7 @@ export async function createAppointment(formData: FormData) {
     ends_at: (formData.get("ends_at") as string) || null,
     all_day: formData.get("all_day") === "true",
     estimated_cost: estimatedCost,
+    contact_id: contactId,
     reminder_days_before: formData.get("reminder_days_before")
       ? Number(formData.get("reminder_days_before"))
       : null,
@@ -88,6 +91,7 @@ export async function updateAppointment(formData: FormData) {
   if (!user) return { error: "Nicht angemeldet" };
 
   const id = formData.get("id") as string;
+  const contactId = (formData.get("contact_id") as string) || null;
   const { error } = await supabase
     .from("appointments")
     .update({
@@ -101,6 +105,7 @@ export async function updateAppointment(formData: FormData) {
       estimated_cost: formData.get("estimated_cost")
         ? Number(formData.get("estimated_cost"))
         : null,
+      contact_id: contactId,
       reminder_days_before: formData.get("reminder_days_before")
         ? Number(formData.get("reminder_days_before"))
         : null,

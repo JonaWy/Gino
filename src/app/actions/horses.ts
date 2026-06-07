@@ -2,7 +2,24 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser } from "@/lib/horse";
+import { createHorseForUser, getCurrentUser, getHorse } from "@/lib/horse";
+
+export async function createHorse(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Nicht angemeldet" };
+
+  const existing = await getHorse();
+  if (existing) return { error: "Du hast bereits ein Pferd angelegt." };
+
+  const name = (formData.get("name") as string)?.trim() || "Gino";
+  const breed = (formData.get("breed") as string)?.trim() || null;
+
+  const horse = await createHorseForUser(user.id, name, breed);
+  if (!horse) return { error: "Pferd konnte nicht angelegt werden." };
+
+  revalidatePath("/", "layout");
+  return { success: true };
+}
 
 export async function updateHorse(formData: FormData) {
   const supabase = await createClient();

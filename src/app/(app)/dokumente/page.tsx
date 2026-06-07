@@ -1,11 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import { getHorse } from "@/lib/horse";
+import { requireHorse } from "@/lib/horse";
 import { DocumentsSection } from "@/components/extras/documents-section";
 import type { Document } from "@/types/database";
 
 export default async function DokumentePage() {
-  const horse = await getHorse();
-  if (!horse) return <p>Kein Pferd gefunden.</p>;
+  const horse = await requireHorse();
 
   const supabase = await createClient();
   const { data: documents } = await supabase
@@ -17,7 +16,7 @@ export default async function DokumentePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="font-serif text-2xl font-semibold">Dokumente</h2>
+        <h2 className="hidden font-serif text-2xl font-semibold md:block">Dokumente</h2>
         <p className="text-sm text-muted-foreground">
           Pferdepass, Versicherung und weitere Unterlagen
         </p>
