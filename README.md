@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gino – Pferde-Management PWA
 
-## Getting Started
+Deutschsprachige Web-App zur Verwaltung deines Pferdes: Dashboard, Kalender, Turnier- und Vital-Historie, Kosten-Forecast und mehr.
 
-First, run the development server:
+## Features
+
+- **Dashboard** – Pferdebild, Stammdaten, nächster Termin mit Kostenschätzung
+- **Kalender** – Termine (Impfung, Tierarzt, Schmied, Turnier, Training) mit Kosten
+- **Kosten-Forecast** – Monatsprognose, Ist-Historie, Durchschnittswerte
+- **Turniere** – Historie mit Bewertung, Reiter und Preisgeld
+- **Vitalwerte** – Gewicht, Stockmaß, Turniergewinne, geschätzter Wert (Charts)
+- **Gesundheit** – Impfungen, Entwurmung mit Fälligkeits-Tracking
+- **Training** – Trainingslog
+- **Dokumente** – Upload mit Ablauf-Erinnerungen
+- **Kontakte** – Tierarzt, Schmied, Stall (Tel-Link)
+- **PWA** – Installierbar auf dem Handy
+
+## Setup
+
+### 1. Supabase-Projekt
+
+1. Erstelle ein Projekt auf [supabase.com](https://supabase.com)
+2. Führe die Migration aus: `supabase/migrations/001_initial_schema.sql` (SQL Editor)
+3. Erstelle Storage-Buckets:
+   - `horse-images` (öffentlich)
+   - `documents` (privat)
+
+### 2. Umgebungsvariablen
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.local.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Trage ein:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+NEXT_PUBLIC_SUPABASE_URL=https://dein-projekt.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=dein-anon-key
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Entwicklung
 
-## Learn More
+```bash
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Öffne [http://localhost:3000](http://localhost:3000), registriere dich – ein Pferd „Gino“ wird automatisch angelegt.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Lizenz
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Kommerzielle proprietäre Lizenz – siehe [LICENSE](LICENSE). Nutzung, Weitergabe und kommerzielle Verwertung nur mit schriftlicher Genehmigung.
 
-## Deploy on Vercel
+## Tech-Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 16 (App Router) + TypeScript
+- Tailwind CSS + shadcn/ui
+- Supabase (Auth, Postgres, Storage)
+- Recharts
