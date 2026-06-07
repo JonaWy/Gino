@@ -14,16 +14,7 @@ export default async function KontaktePage() {
     .order("name");
 
   return (
-    <div className="flex flex-col gap-4 md:gap-6">
-      <div className="flex flex-col gap-1">
-        <h2 className="hidden font-serif text-2xl font-semibold md:block">
-          Kontakte
-        </h2>
-        <p className="text-sm text-muted-foreground md:max-w-2xl">
-          Reiter, Tierärzte, Schmiede, Trainer und Physiotherapeuten verwalten –
-          in Turnieren, Training und Kalender auswählbar.
-        </p>
-      </div>
+    <div className="flex h-[calc(100dvh-3.5rem-5rem-env(safe-area-inset-bottom))] flex-col overflow-hidden md:h-[calc(100dvh-3.5rem-2rem)]">
       <ContactsSection
         horseId={horse.id}
         contacts={(contacts as Contact[]) ?? []}

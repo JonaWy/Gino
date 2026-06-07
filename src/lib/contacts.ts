@@ -27,6 +27,13 @@ export const OTHER_CONTACT_ROLES = [
   "sonstiges",
 ] as const satisfies readonly ContactRole[];
 
+export const ALL_CONTACT_ROLES = [
+  ...PERSON_CONTACT_ROLES,
+  ...OTHER_CONTACT_ROLES,
+] as const satisfies readonly ContactRole[];
+
+export const CONTACTS_PAGE_SIZE = 6;
+
 export const CONTACT_ROLE_META: Record<
   ContactRole,
   { icon: LucideIcon; accent: string; avatar: string }
