@@ -98,7 +98,9 @@ export function HealthSection({
                 onValueChange={(v) => v && setType(v as HealthRecordType)}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue />
+                  <SelectValue>
+                    {HEALTH_RECORD_TYPE_LABELS[type]}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -120,10 +122,16 @@ export function HealthSection({
             <div className="flex flex-col gap-2">
               <Label htmlFor="date">Datum</Label>
               <Input id="date" name="date" type="date" required />
+              <p className="text-xs text-muted-foreground">
+                Erscheint automatisch als Termin im Kalender.
+              </p>
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="next_due_date">Nächste Fälligkeit</Label>
               <Input id="next_due_date" name="next_due_date" type="date" />
+              <p className="text-xs text-muted-foreground">
+                Erscheint automatisch als Termin im Kalender.
+              </p>
             </div>
             <ContactSelect
               contacts={contacts}
@@ -175,7 +183,9 @@ export function HealthSection({
                     {overdue ? (
                       <Badge variant="destructive">Überfällig</Badge>
                     ) : r.next_due_date ? (
-                      <Badge variant="secondary">Geplant</Badge>
+                      <Badge variant="secondary">
+                        {r.appointment_id ? "Im Kalender" : "Geplant"}
+                      </Badge>
                     ) : null}
                   </div>
                   {r.product_name && (
@@ -244,7 +254,9 @@ export function HealthSection({
                       {overdue ? (
                         <Badge variant="destructive">Überfällig</Badge>
                       ) : r.next_due_date ? (
-                        <Badge variant="secondary">Geplant</Badge>
+                        <Badge variant="secondary">
+                          {r.appointment_id ? "Im Kalender" : "Geplant"}
+                        </Badge>
                       ) : (
                         "–"
                       )}

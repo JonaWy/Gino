@@ -62,31 +62,9 @@ export function VitalForm({ horseId }: { horseId: string }) {
               <Input id="height_cm" name="height_cm" type="number" step="0.1" />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="tournament_earnings_total">
-                Turniergewinne gesamt (€)
-              </Label>
-              <Input
-                id="tournament_earnings_total"
-                name="tournament_earnings_total"
-                type="number"
-                step="0.01"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="estimated_value">Geschätzter Wert (€)</Label>
-              <Input
-                id="estimated_value"
-                name="estimated_value"
-                type="number"
-                step="0.01"
-              />
-            </div>
-          </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="notes">Notizen</Label>
-            <Textarea id="notes" name="notes" />
+            <Label htmlFor="notes">Notizen (optional)</Label>
+            <Textarea id="notes" name="notes" rows={2} />
           </div>
           <Button type="submit" disabled={pending}>
             Speichern

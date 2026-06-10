@@ -37,8 +37,8 @@ export default async function KalenderPage() {
       <div>
         <h2 className="hidden font-serif text-2xl font-semibold md:block">Kalender</h2>
         <p className="text-sm text-muted-foreground">
-          Termine für Impfung, Tierarzt, Schmied, Turniere, Training und
-          Physiotherapie
+          Termine aus Kalender, Gesundheit, Training und Turnieren – automatisch
+          synchronisiert
         </p>
       </div>
       {currentSummary && <MonthCostSummaryCard summary={currentSummary} />}

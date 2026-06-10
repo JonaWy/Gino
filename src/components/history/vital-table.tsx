@@ -17,7 +17,6 @@ import {
   MobileListCard,
   MobileListRow,
 } from "@/components/ui/mobile-list-card";
-import { formatCurrency } from "@/lib/costs";
 import type { VitalRecord } from "@/types/database";
 import { Trash2 } from "lucide-react";
 
@@ -59,22 +58,9 @@ export function VitalTable({ records }: { records: VitalRecord[] }) {
               label="Stockmaß"
               value={r.height_cm ? `${r.height_cm} cm` : "–"}
             />
-            <MobileListRow
-              label="Turniergewinne"
-              value={
-                r.tournament_earnings_total
-                  ? formatCurrency(Number(r.tournament_earnings_total))
-                  : "–"
-              }
-            />
-            <MobileListRow
-              label="Wert"
-              value={
-                r.estimated_value
-                  ? formatCurrency(Number(r.estimated_value))
-                  : "–"
-              }
-            />
+            {r.notes && (
+              <MobileListRow label="Notizen" value={r.notes} />
+            )}
           </MobileListCard>
         ))}
       </div>
@@ -86,8 +72,7 @@ export function VitalTable({ records }: { records: VitalRecord[] }) {
               <TableHead>Datum</TableHead>
               <TableHead>Gewicht</TableHead>
               <TableHead>Stockmaß</TableHead>
-              <TableHead>Turniergewinne</TableHead>
-              <TableHead>Wert</TableHead>
+              <TableHead>Notizen</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -105,15 +90,8 @@ export function VitalTable({ records }: { records: VitalRecord[] }) {
                 <TableCell>
                   {r.height_cm ? `${r.height_cm} cm` : "–"}
                 </TableCell>
-                <TableCell>
-                  {r.tournament_earnings_total
-                    ? formatCurrency(Number(r.tournament_earnings_total))
-                    : "–"}
-                </TableCell>
-                <TableCell>
-                  {r.estimated_value
-                    ? formatCurrency(Number(r.estimated_value))
-                    : "–"}
+                <TableCell className="max-w-xs truncate text-muted-foreground">
+                  {r.notes ?? "–"}
                 </TableCell>
                 <TableCell>
                   <Button

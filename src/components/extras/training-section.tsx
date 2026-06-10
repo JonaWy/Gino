@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import {
@@ -12,6 +13,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ContactSelect } from "@/components/contact-select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   MobileListCard,
   MobileListRow,
@@ -32,8 +41,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { contactNameById } from "@/lib/contacts";
+import { TRAINING_FOCUS_OPTIONS } from "@/lib/labels";
 import type { Contact, TrainingLog } from "@/types/database";
 import { Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+function formatTrainingPeriod(log: TrainingLog) {
+  const start = format(parseISO(log.date), "dd.MM.yyyy", { locale: de });
+  if (!log.end_date || log.end_date === log.date) return start;
+  const end = format(parseISO(log.end_date), "dd.MM.yyyy", { locale: de });
+  return `${start} – ${end}`;
+}
 
 export function TrainingSection({
   horseId,
@@ -44,22 +62,30 @@ export function TrainingSection({
   logs: TrainingLog[];
   contacts: Contact[];
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [riderContactId, setRiderContactId] = useState("");
   const [trainerContactId, setTrainerContactId] = useState("");
+  const [focus, setFocus] = useState("");
 
   function handleSubmit(formData: FormData) {
     formData.set("horse_id", horseId);
     if (riderContactId) formData.set("rider_contact_id", riderContactId);
     if (trainerContactId) formData.set("trainer_contact_id", trainerContactId);
+    if (focus) formData.set("focus", focus);
     startTransition(async () => {
       const result = await createTrainingLog(formData);
-      if (!result?.error) {
-        setOpen(false);
-        setRiderContactId("");
-        setTrainerContactId("");
+      if (result?.error) {
+        toast.error(result.error);
+        return;
       }
+      router.refresh();
+      setOpen(false);
+      setRiderContactId("");
+      setTrainerContactId("");
+      setFocus("");
+      toast.success("Training gespeichert");
     });
   }
 
@@ -91,35 +117,19 @@ export function TrainingSection({
             <DialogTitle>Trainingseinheit</DialogTitle>
           </DialogHeader>
           <form action={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="date">Datum</Label>
-              <Input id="date" name="date" type="date" required />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="date">Von</Label>
+                <Input id="date" name="date" type="date" required />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="end_date">Bis</Label>
+                <Input id="end_date" name="end_date" type="date" />
+              </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="duration_minutes">Dauer (Minuten)</Label>
-              <Input
-                id="duration_minutes"
-                name="duration_minutes"
-                type="number"
-                min="1"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="focus">Fokus</Label>
-              <Input
-                id="focus"
-                name="focus"
-                placeholder="Technik, Ausritt, Bodenarbeit…"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="intensity">Intensität</Label>
-              <Input
-                id="intensity"
-                name="intensity"
-                placeholder="leicht, mittel, intensiv"
-              />
-            </div>
+            <p className="-mt-2 text-xs text-muted-foreground">
+              „Bis“ leer lassen für einen einzelnen Trainingstag.
+            </p>
             <ContactSelect
               contacts={contacts}
               role="reiter"
@@ -136,6 +146,26 @@ export function TrainingSection({
               label="Trainer"
               id="training-trainer"
             />
+            <div className="flex flex-col gap-2">
+              <Label>Disziplin / Fokus</Label>
+              <Select
+                value={focus || undefined}
+                onValueChange={(v) => setFocus(v ?? "")}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Disziplin wählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {TRAINING_FOCUS_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="notes">Notizen</Label>
               <Textarea id="notes" name="notes" />
@@ -163,7 +193,13 @@ export function TrainingSection({
                     className="text-destructive"
                     onClick={() =>
                       startTransition(async () => {
-                        await deleteTrainingLog(l.id);
+                        const result = await deleteTrainingLog(l.id);
+                        if (result?.error) {
+                          toast.error(result.error);
+                          return;
+                        }
+                        router.refresh();
+                        toast.success("Training gelöscht");
                       })
                     }
                   >
@@ -171,17 +207,11 @@ export function TrainingSection({
                   </Button>
                 }
               >
-                <p className="font-medium">
-                  {format(parseISO(l.date), "dd.MM.yyyy", { locale: de })}
-                </p>
+                <p className="font-medium">{formatTrainingPeriod(l)}</p>
                 <MobileListRow
-                  label="Dauer"
-                  value={
-                    l.duration_minutes ? `${l.duration_minutes} min` : "–"
-                  }
+                  label="Disziplin / Fokus"
+                  value={l.focus ?? "–"}
                 />
-                <MobileListRow label="Fokus" value={l.focus ?? "–"} />
-                <MobileListRow label="Intensität" value={l.intensity ?? "–"} />
                 <MobileListRow label="Reiter" value={riderLabel(l)} />
                 <MobileListRow label="Trainer" value={trainerLabel(l)} />
               </MobileListCard>
@@ -192,10 +222,8 @@ export function TrainingSection({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Datum</TableHead>
-                  <TableHead>Dauer</TableHead>
-                  <TableHead>Fokus</TableHead>
-                  <TableHead>Intensität</TableHead>
+                  <TableHead>Zeitraum</TableHead>
+                  <TableHead>Disziplin / Fokus</TableHead>
                   <TableHead>Reiter</TableHead>
                   <TableHead>Trainer</TableHead>
                   <TableHead />
@@ -204,14 +232,8 @@ export function TrainingSection({
               <TableBody>
                 {logs.map((l) => (
                   <TableRow key={l.id}>
-                    <TableCell>
-                      {format(parseISO(l.date), "dd.MM.yyyy", { locale: de })}
-                    </TableCell>
-                    <TableCell>
-                      {l.duration_minutes ? `${l.duration_minutes} min` : "–"}
-                    </TableCell>
+                    <TableCell>{formatTrainingPeriod(l)}</TableCell>
                     <TableCell>{l.focus ?? "–"}</TableCell>
-                    <TableCell>{l.intensity ?? "–"}</TableCell>
                     <TableCell>{riderLabel(l)}</TableCell>
                     <TableCell>{trainerLabel(l)}</TableCell>
                     <TableCell>
@@ -221,7 +243,13 @@ export function TrainingSection({
                         disabled={pending}
                         onClick={() =>
                           startTransition(async () => {
-                            await deleteTrainingLog(l.id);
+                            const result = await deleteTrainingLog(l.id);
+                            if (result?.error) {
+                              toast.error(result.error);
+                              return;
+                            }
+                            router.refresh();
+                            toast.success("Training gelöscht");
                           })
                         }
                       >

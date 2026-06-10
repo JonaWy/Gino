@@ -21,7 +21,7 @@ export default async function TrainingPage() {
       <div>
         <h2 className="hidden font-serif text-2xl font-semibold md:block">Training</h2>
         <p className="text-sm text-muted-foreground">
-          Trainingslog mit Reiter, Trainer, Dauer und Fokus
+          Trainingslog mit Zeitraum, Disziplin, Reiter und Trainer
         </p>
       </div>
       <TrainingSection

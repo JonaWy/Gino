@@ -31,6 +31,10 @@ export function ContactSelect({
 }) {
   const options = filterContactsByRole(contacts, role);
   const roleLabel = CONTACT_ROLE_LABELS[role];
+  const selected = options.find((c) => c.id === value);
+  const selectedLabel = selected
+    ? `${selected.name}${selected.license_number ? ` (${selected.license_number})` : ""}`
+    : null;
 
   return (
     <div className="flex flex-col gap-2">
@@ -43,9 +47,14 @@ export function ContactSelect({
           </Link>
         </p>
       ) : (
-        <Select value={value} onValueChange={(v) => onValueChange(v ?? "")}>
+        <Select
+          value={value || undefined}
+          onValueChange={(v) => onValueChange(v ?? "")}
+        >
           <SelectTrigger id={id} className="w-full">
-            <SelectValue placeholder={`${roleLabel} wählen`} />
+            <SelectValue placeholder={`${roleLabel} wählen`}>
+              {selectedLabel}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>

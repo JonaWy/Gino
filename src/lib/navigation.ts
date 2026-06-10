@@ -4,7 +4,6 @@ import {
   Heart,
   Home,
   Trophy,
-  Activity,
   Euro,
   FileText,
   Phone,
@@ -23,11 +22,15 @@ export const PRIMARY_NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Dashboard", shortLabel: "Home", icon: Home },
   { href: "/kalender", label: "Kalender", icon: Calendar },
   { href: "/turniere", label: "Turniere", icon: Trophy },
-  { href: "/vitalwerte", label: "Vitalwerte", shortLabel: "Vital", icon: Activity },
+  {
+    href: "/vitalwerte",
+    label: "Gesundheit",
+    shortLabel: "Gesund",
+    icon: Heart,
+  },
 ];
 
 export const SECONDARY_NAV_ITEMS: NavItem[] = [
-  { href: "/gesundheit", label: "Gesundheit", icon: Heart },
   { href: "/training", label: "Training", icon: Dumbbell },
   { href: "/kosten", label: "Kosten", icon: Euro },
   { href: "/dokumente", label: "Dokumente", icon: FileText },
@@ -41,6 +44,9 @@ export const ALL_NAV_ITEMS: NavItem[] = [
 ];
 
 export function isNavActive(pathname: string, href: string) {
+  if (href === "/vitalwerte" && pathname.startsWith("/gesundheit")) {
+    return true;
+  }
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 

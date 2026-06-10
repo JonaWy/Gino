@@ -21,9 +21,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   APPOINTMENT_TYPE_LABELS,
+  APPOINTMENT_STATUS_LABELS,
   APPOINTMENT_TYPE_COLORS,
 } from "@/lib/labels";
 import { formatCurrency } from "@/lib/costs";
+import { appointmentDayRange } from "@/lib/appointment-dates";
 import type { Appointment, Contact } from "@/types/database";
 import { Check, Trash2 } from "lucide-react";
 import { AppointmentForm } from "./appointment-form";
@@ -41,31 +43,51 @@ export function AppointmentList({
 
   if (appointments.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">Keine Termine an diesem Tag.</p>
+      <p className="rounded-lg border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
+        Keine Termine an diesem Tag.
+      </p>
     );
   }
 
+  function formatAppointmentTime(appt: Appointment) {
+    if (appt.all_day) {
+      const { start, end } = appointmentDayRange(appt);
+      if (start.getTime() !== end.getTime()) {
+        return `${format(start, "d. MMM", { locale: de })} – ${format(end, "d. MMM yyyy", { locale: de })}`;
+      }
+      return "Ganztägig";
+    }
+    return format(parseISO(appt.starts_at), "HH:mm 'Uhr'", { locale: de });
+  }
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       {appointments.map((appt) => (
-        <Card key={appt.id}>
-          <CardContent className="flex flex-col gap-3 p-4">
+        <Card key={appt.id} className="py-0">
+          <CardContent className="flex flex-col gap-2.5 p-3">
             <div className="flex items-start justify-between gap-2">
-              <div className="flex flex-col gap-1">
+              <div className="flex min-w-0 flex-col gap-1">
                 <div className="flex items-center gap-2">
                   <span
-                    className={`size-2.5 rounded-full ${APPOINTMENT_TYPE_COLORS[appt.type]}`}
+                    className={`size-2 shrink-0 rounded-full ${APPOINTMENT_TYPE_COLORS[appt.type]}`}
                   />
-                  <span className="font-medium">{appt.title}</span>
+                  <span className="truncate font-medium">{appt.title}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {format(parseISO(appt.starts_at), "HH:mm 'Uhr'", { locale: de })}
+                  {formatAppointmentTime(appt)}
                   {appt.location && ` · ${appt.location}`}
                 </p>
               </div>
-              <Badge variant="outline">
-                {APPOINTMENT_TYPE_LABELS[appt.type]}
-              </Badge>
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <Badge variant="outline">
+                  {APPOINTMENT_TYPE_LABELS[appt.type]}
+                </Badge>
+                {appt.status !== "geplant" && (
+                  <span className="text-[11px] text-muted-foreground">
+                    {APPOINTMENT_STATUS_LABELS[appt.status]}
+                  </span>
+                )}
+              </div>
             </div>
             {appt.estimated_cost && appt.status === "geplant" && (
               <p className="text-sm">

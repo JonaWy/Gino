@@ -12,14 +12,6 @@ import type { VitalRecord } from "@/types/database";
 const chartConfig = {
   weight_kg: { label: "Gewicht (kg)", color: "var(--chart-1)" },
   height_cm: { label: "Stockmaß (cm)", color: "var(--chart-2)" },
-  tournament_earnings_total: {
-    label: "Turniergewinne (€)",
-    color: "var(--chart-3)",
-  },
-  estimated_value: {
-    label: "Geschätzter Wert (€)",
-    color: "var(--chart-4)",
-  },
 };
 
 export function VitalCharts({ records }: { records: VitalRecord[] }) {
@@ -32,12 +24,6 @@ export function VitalCharts({ records }: { records: VitalRecord[] }) {
       date: format(parseISO(r.recorded_at), "dd.MM.yy"),
       weight_kg: r.weight_kg ? Number(r.weight_kg) : null,
       height_cm: r.height_cm ? Number(r.height_cm) : null,
-      tournament_earnings_total: r.tournament_earnings_total
-        ? Number(r.tournament_earnings_total)
-        : null,
-      estimated_value: r.estimated_value
-        ? Number(r.estimated_value)
-        : null,
     }));
 
   if (data.length === 0) {
@@ -51,12 +37,10 @@ export function VitalCharts({ records }: { records: VitalRecord[] }) {
   const charts = [
     { key: "weight_kg" as const, title: "Gewicht" },
     { key: "height_cm" as const, title: "Stockmaß" },
-    { key: "tournament_earnings_total" as const, title: "Turniergewinne" },
-    { key: "estimated_value" as const, title: "Geschätzter Wert" },
   ];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-6 sm:grid-cols-2">
       {charts.map((chart) => {
         const hasData = data.some((d) => d[chart.key] !== null);
         if (!hasData) return null;

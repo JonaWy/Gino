@@ -3,6 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/horse";
+import { buildHealthDueAppointment } from "@/lib/health-calendar";
+import {
+  buildHealthDateAppointment,
+  buildTrainingAppointment,
+} from "@/lib/calendar-sync";
+import type { HealthRecordType } from "@/types/database";
 
 async function getContactName(contactId: string | null) {
   if (!contactId) return null;
@@ -50,20 +56,114 @@ export async function createHealthRecord(formData: FormData) {
     (formData.get("vet_name") as string) ||
     null;
 
-  const { error } = await supabase.from("health_records").insert({
-    user_id: user.id,
-    horse_id: formData.get("horse_id") as string,
-    type: formData.get("type") as string,
-    product_name: (formData.get("product_name") as string) || null,
-    date: formData.get("date") as string,
-    next_due_date: (formData.get("next_due_date") as string) || null,
-    contact_id: contactId,
-    vet_name: vetName,
-    notes: (formData.get("notes") as string) || null,
-  });
+  const horseId = formData.get("horse_id") as string;
+  const type = formData.get("type") as HealthRecordType;
+  const productName = (formData.get("product_name") as string) || null;
+  const nextDueDate = (formData.get("next_due_date") as string) || null;
+  const notes = (formData.get("notes") as string) || null;
+
+  const { data: record, error } = await supabase
+    .from("health_records")
+    .insert({
+      user_id: user.id,
+      horse_id: horseId,
+      type,
+      product_name: productName,
+      date: formData.get("date") as string,
+      next_due_date: nextDueDate,
+      contact_id: contactId,
+      vet_name: vetName,
+      notes,
+    })
+    .select("id")
+    .single();
 
   if (error) return { error: error.message };
+
+  const healthPayload = {
+    user_id: user.id,
+    horse_id: horseId,
+    type,
+    product_name: productName,
+    contact_id: contactId,
+    vet_name: vetName,
+    notes,
+  };
+
+  const { data: dateAppointment, error: dateAppointmentError } =
+    await supabase
+      .from("appointments")
+      .insert(
+        buildHealthDateAppointment({
+          ...healthPayload,
+          date: formData.get("date") as string,
+        })
+      )
+      .select("id")
+      .single();
+
+  if (dateAppointmentError) {
+    await supabase.from("health_records").delete().eq("id", record.id);
+    return { error: dateAppointmentError.message };
+  }
+
+  const { error: dateLinkError } = await supabase
+    .from("health_records")
+    .update({ date_appointment_id: dateAppointment.id })
+    .eq("id", record.id);
+
+  if (dateLinkError) {
+    await supabase.from("appointments").delete().eq("id", dateAppointment.id);
+    await supabase.from("health_records").delete().eq("id", record.id);
+    return { error: dateLinkError.message };
+  }
+
+  if (nextDueDate) {
+    const { data: appointment, error: appointmentError } = await supabase
+      .from("appointments")
+      .insert(
+        buildHealthDueAppointment({
+          user_id: user.id,
+          horse_id: horseId,
+          type,
+          product_name: productName,
+          next_due_date: nextDueDate,
+          contact_id: contactId,
+          vet_name: vetName,
+          notes,
+        })
+      )
+      .select("id")
+      .single();
+
+    if (appointmentError) {
+      await supabase
+        .from("appointments")
+        .delete()
+        .eq("id", dateAppointment.id);
+      await supabase.from("health_records").delete().eq("id", record.id);
+      return { error: appointmentError.message };
+    }
+
+    const { error: linkError } = await supabase
+      .from("health_records")
+      .update({ appointment_id: appointment.id })
+      .eq("id", record.id);
+
+    if (linkError) {
+      await supabase.from("appointments").delete().eq("id", appointment.id);
+      await supabase
+        .from("appointments")
+        .delete()
+        .eq("id", dateAppointment.id);
+      await supabase.from("health_records").delete().eq("id", record.id);
+      return { error: linkError.message };
+    }
+  }
+
+  revalidatePath("/vitalwerte");
   revalidatePath("/gesundheit");
+  revalidatePath("/kalender");
   revalidatePath("/");
   return { success: true };
 }
@@ -73,6 +173,13 @@ export async function deleteHealthRecord(id: string) {
   const user = await getCurrentUser();
   if (!user) return { error: "Nicht angemeldet" };
 
+  const { data: record } = await supabase
+    .from("health_records")
+    .select("appointment_id, date_appointment_id")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single();
+
   const { error } = await supabase
     .from("health_records")
     .delete()
@@ -80,7 +187,23 @@ export async function deleteHealthRecord(id: string) {
     .eq("user_id", user.id);
 
   if (error) return { error: error.message };
+
+  const appointmentIds = [
+    record?.appointment_id,
+    record?.date_appointment_id,
+  ].filter(Boolean) as string[];
+
+  if (appointmentIds.length > 0) {
+    await supabase
+      .from("appointments")
+      .delete()
+      .in("id", appointmentIds)
+      .eq("user_id", user.id);
+  }
+
+  revalidatePath("/vitalwerte");
   revalidatePath("/gesundheit");
+  revalidatePath("/kalender");
   return { success: true };
 }
 
@@ -93,24 +216,72 @@ export async function createTrainingLog(formData: FormData) {
     (formData.get("rider_contact_id") as string) || null;
   const riderName = await getContactName(riderContactId);
 
-  const { error } = await supabase.from("training_logs").insert({
-    user_id: user.id,
-    horse_id: formData.get("horse_id") as string,
-    date: formData.get("date") as string,
-    duration_minutes: formData.get("duration_minutes")
-      ? Number(formData.get("duration_minutes"))
-      : null,
-    focus: (formData.get("focus") as string) || null,
-    intensity: (formData.get("intensity") as string) || null,
-    notes: (formData.get("notes") as string) || null,
-    rider_contact_id: riderContactId,
-    trainer_contact_id:
-      (formData.get("trainer_contact_id") as string) || null,
-    rider_name: riderName,
-  });
+  const startDate = formData.get("date") as string;
+  const endDate = trimOrNull(formData.get("end_date"));
+
+  const trainerContactId =
+    (formData.get("trainer_contact_id") as string) || null;
+  const focus = trimOrNull(formData.get("focus"));
+  const notes = (formData.get("notes") as string) || null;
+
+  if (endDate && endDate < startDate) {
+    return { error: "Enddatum darf nicht vor dem Startdatum liegen." };
+  }
+
+  const { data: log, error } = await supabase
+    .from("training_logs")
+    .insert({
+      user_id: user.id,
+      horse_id: formData.get("horse_id") as string,
+      date: startDate,
+      end_date: endDate,
+      focus,
+      notes,
+      rider_contact_id: riderContactId,
+      trainer_contact_id: trainerContactId,
+      rider_name: riderName,
+    })
+    .select("id")
+    .single();
 
   if (error) return { error: error.message };
+
+  const { data: appointment, error: appointmentError } = await supabase
+    .from("appointments")
+    .insert(
+      buildTrainingAppointment({
+        user_id: user.id,
+        horse_id: formData.get("horse_id") as string,
+        date: startDate,
+        end_date: endDate,
+        focus,
+        notes,
+        rider_name: riderName,
+        trainer_contact_id: trainerContactId,
+        rider_contact_id: riderContactId,
+      })
+    )
+    .select("id")
+    .single();
+
+  if (appointmentError) {
+    await supabase.from("training_logs").delete().eq("id", log.id);
+    return { error: appointmentError.message };
+  }
+
+  const { error: linkError } = await supabase
+    .from("training_logs")
+    .update({ appointment_id: appointment.id })
+    .eq("id", log.id);
+
+  if (linkError) {
+    await supabase.from("appointments").delete().eq("id", appointment.id);
+    await supabase.from("training_logs").delete().eq("id", log.id);
+    return { error: linkError.message };
+  }
+
   revalidatePath("/training");
+  revalidatePath("/kalender");
   return { success: true };
 }
 
@@ -119,6 +290,13 @@ export async function deleteTrainingLog(id: string) {
   const user = await getCurrentUser();
   if (!user) return { error: "Nicht angemeldet" };
 
+  const { data: log } = await supabase
+    .from("training_logs")
+    .select("appointment_id")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single();
+
   const { error } = await supabase
     .from("training_logs")
     .delete()
@@ -126,7 +304,17 @@ export async function deleteTrainingLog(id: string) {
     .eq("user_id", user.id);
 
   if (error) return { error: error.message };
+
+  if (log?.appointment_id) {
+    await supabase
+      .from("appointments")
+      .delete()
+      .eq("id", log.appointment_id)
+      .eq("user_id", user.id);
+  }
+
   revalidatePath("/training");
+  revalidatePath("/kalender");
   return { success: true };
 }
 
@@ -149,6 +337,7 @@ export async function createContact(formData: FormData) {
   revalidatePath("/kontakte", "page");
   revalidatePath("/turniere");
   revalidatePath("/training");
+  revalidatePath("/vitalwerte");
   revalidatePath("/gesundheit");
   revalidatePath("/kalender");
   return { success: true, contact: data };
@@ -172,6 +361,7 @@ export async function updateContact(formData: FormData) {
   revalidatePath("/kontakte", "page");
   revalidatePath("/turniere");
   revalidatePath("/training");
+  revalidatePath("/vitalwerte");
   revalidatePath("/gesundheit");
   revalidatePath("/kalender");
   return { success: true, contact: data };
@@ -192,6 +382,7 @@ export async function deleteContact(id: string) {
   revalidatePath("/kontakte", "page");
   revalidatePath("/turniere");
   revalidatePath("/training");
+  revalidatePath("/vitalwerte");
   revalidatePath("/gesundheit");
   revalidatePath("/kalender");
   return { success: true };
@@ -233,6 +424,7 @@ export async function createDocument(formData: FormData) {
 
   if (error) return { error: error.message };
   revalidatePath("/dokumente");
+  revalidatePath("/vitalwerte");
   revalidatePath("/");
   return { success: true };
 }
@@ -250,6 +442,7 @@ export async function deleteDocument(id: string) {
 
   if (error) return { error: error.message };
   revalidatePath("/dokumente");
+  revalidatePath("/vitalwerte");
   return { success: true };
 }
 

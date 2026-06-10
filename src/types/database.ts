@@ -31,6 +31,7 @@ export type DocumentType =
   | "pferdepass"
   | "versicherung"
   | "roentgen"
+  | "arztbericht"
   | "kaufvertrag"
   | "impfnachweis"
   | "sonstiges";
@@ -53,6 +54,7 @@ export interface Horse {
   passport_number: string | null;
   image_url: string | null;
   notes: string | null;
+  known_conditions: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -104,6 +106,18 @@ export interface Tournament {
   contact_id: string | null;
   prize_money: number | null;
   notes: string | null;
+  appointment_id: string | null;
+  created_at: string;
+}
+
+export interface HorseCondition {
+  id: string;
+  user_id: string;
+  horse_id: string;
+  name: string;
+  notes: string | null;
+  report_document_id: string | null;
+  xray_document_id: string | null;
   created_at: string;
 }
 
@@ -164,6 +178,8 @@ export interface HealthRecord {
   vet_name: string | null;
   contact_id: string | null;
   notes: string | null;
+  appointment_id: string | null;
+  date_appointment_id: string | null;
   created_at: string;
 }
 
@@ -172,6 +188,7 @@ export interface TrainingLog {
   user_id: string;
   horse_id: string;
   date: string;
+  end_date: string | null;
   duration_minutes: number | null;
   focus: string | null;
   intensity: string | null;
@@ -179,6 +196,7 @@ export interface TrainingLog {
   rider_name: string | null;
   rider_contact_id: string | null;
   trainer_contact_id: string | null;
+  appointment_id: string | null;
   created_at: string;
 }
 
@@ -214,6 +232,11 @@ export interface Database {
         Row: VitalRecord;
         Insert: Partial<VitalRecord>;
         Update: Partial<VitalRecord>;
+      };
+      horse_conditions: {
+        Row: HorseCondition;
+        Insert: Partial<HorseCondition>;
+        Update: Partial<HorseCondition>;
       };
       expenses: {
         Row: Expense;

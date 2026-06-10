@@ -47,6 +47,7 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
   pferdepass: "Pferdepass",
   versicherung: "Versicherung",
   roentgen: "Röntgen",
+  arztbericht: "Arztbericht",
   kaufvertrag: "Kaufvertrag",
   impfnachweis: "Impfnachweis",
   sonstiges: "Sonstiges",
@@ -90,6 +91,19 @@ export const DEFAULT_COST_AMOUNTS: Record<string, number> = {
 };
 
 export const HORSE_GENDERS = ["Hengst", "Stute", "Wallach"] as const;
+
+export const TRAINING_FOCUS_OPTIONS = [
+  "Dressur",
+  "Springen",
+  "Vielseitigkeit",
+  "Western",
+  "Ausritt",
+  "Bodenarbeit",
+  "Longieren",
+  "Technik",
+  "Fahren",
+  "Sonstiges",
+] as const;
 
 export function horseGenderOptions(current?: string | null): string[] {
   const value = current?.trim();
