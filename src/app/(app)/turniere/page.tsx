@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireHorse } from "@/lib/horse";
+import { TournamentBestOf } from "@/components/history/tournament-best-of";
 import { TournamentForm } from "@/components/history/tournament-form";
 import { TournamentTable } from "@/components/history/tournament-table";
 import type { Contact, Tournament } from "@/types/database";
@@ -19,8 +20,11 @@ export default async function TurnierePage() {
 
   const contactList = (contacts as Contact[]) ?? [];
 
+  const tournamentList = (tournaments as Tournament[]) ?? [];
+
   return (
     <div className="flex flex-col gap-6">
+      <TournamentBestOf tournaments={tournamentList} contacts={contactList} />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="hidden font-serif text-2xl font-semibold md:block">Turnier-Historie</h2>
@@ -30,10 +34,7 @@ export default async function TurnierePage() {
         </div>
         <TournamentForm horseId={horse.id} contacts={contactList} />
       </div>
-      <TournamentTable
-        tournaments={(tournaments as Tournament[]) ?? []}
-        contacts={contactList}
-      />
+      <TournamentTable tournaments={tournamentList} contacts={contactList} />
     </div>
   );
 }

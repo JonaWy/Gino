@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   updateHorse,
   uploadHorseImage,
@@ -11,7 +11,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EXPENSE_CATEGORY_LABELS } from "@/lib/labels";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { horseBreedOptions } from "@/lib/horse-breeds";
+import { EXPENSE_CATEGORY_LABELS, horseGenderOptions } from "@/lib/labels";
 import type { Horse, CostDefault } from "@/types/database";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,6 +35,10 @@ export function SettingsForm({
   costDefaults: CostDefault[];
 }) {
   const [pending, startTransition] = useTransition();
+  const [breed, setBreed] = useState(horse.breed ?? "");
+  const [gender, setGender] = useState(horse.gender ?? "");
+  const breedOptions = horseBreedOptions(horse.breed);
+  const genderOptions = horseGenderOptions(horse.gender);
 
   return (
     <div className="flex flex-col gap-6">
@@ -55,11 +68,24 @@ export function SettingsForm({
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="breed">Rasse</Label>
-                <Input
-                  id="breed"
-                  name="breed"
-                  defaultValue={horse.breed ?? ""}
-                />
+                <input type="hidden" name="breed" value={breed} />
+                <Select
+                  value={breed || undefined}
+                  onValueChange={(v) => setBreed(v ?? "")}
+                >
+                  <SelectTrigger id="breed" className="w-full">
+                    <SelectValue placeholder="Rasse wählen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {breedOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="birth_date">Geburtsdatum</Label>
@@ -72,12 +98,24 @@ export function SettingsForm({
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="gender">Geschlecht</Label>
-                <Input
-                  id="gender"
-                  name="gender"
-                  defaultValue={horse.gender ?? ""}
-                  placeholder="Hengst, Stute, Wallach"
-                />
+                <input type="hidden" name="gender" value={gender} />
+                <Select
+                  value={gender || undefined}
+                  onValueChange={(v) => setGender(v ?? "")}
+                >
+                  <SelectTrigger id="gender" className="w-full">
+                    <SelectValue placeholder="Geschlecht wählen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {genderOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="color">Farbe</Label>

@@ -10,15 +10,15 @@ import { format, parseISO } from "date-fns";
 import type { VitalRecord } from "@/types/database";
 
 const chartConfig = {
-  weight_kg: { label: "Gewicht (kg)", color: "hsl(var(--chart-1))" },
-  height_cm: { label: "Stockmaß (cm)", color: "hsl(var(--chart-2))" },
+  weight_kg: { label: "Gewicht (kg)", color: "var(--chart-1)" },
+  height_cm: { label: "Stockmaß (cm)", color: "var(--chart-2)" },
   tournament_earnings_total: {
     label: "Turniergewinne (€)",
-    color: "hsl(var(--chart-3))",
+    color: "var(--chart-3)",
   },
   estimated_value: {
     label: "Geschätzter Wert (€)",
-    color: "hsl(var(--chart-4))",
+    color: "var(--chart-4)",
   },
 };
 
@@ -74,7 +74,12 @@ export function VitalCharts({ records }: { records: VitalRecord[] }) {
                   dataKey={chart.key}
                   stroke={`var(--color-${chart.key})`}
                   strokeWidth={2}
-                  dot={{ r: 3 }}
+                  dot={{
+                    r: 3,
+                    fill: `var(--color-${chart.key})`,
+                    stroke: `var(--color-${chart.key})`,
+                  }}
+                  activeDot={{ r: 5 }}
                   connectNulls
                 />
               </LineChart>

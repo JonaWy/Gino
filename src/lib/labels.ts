@@ -88,3 +88,16 @@ export const DEFAULT_COST_AMOUNTS: Record<string, number> = {
   schmied: 80,
   turnier: 150,
 };
+
+export const HORSE_GENDERS = ["Hengst", "Stute", "Wallach"] as const;
+
+export function horseGenderOptions(current?: string | null): string[] {
+  const value = current?.trim();
+  if (
+    value &&
+    !HORSE_GENDERS.includes(value as (typeof HORSE_GENDERS)[number])
+  ) {
+    return [value, ...HORSE_GENDERS];
+  }
+  return [...HORSE_GENDERS];
+}

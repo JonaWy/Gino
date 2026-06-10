@@ -14,11 +14,9 @@ export default async function KontaktePage() {
     .order("name");
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem-5rem-env(safe-area-inset-bottom))] flex-col overflow-hidden md:h-[calc(100dvh-3.5rem-2rem)]">
-      <ContactsSection
-        horseId={horse.id}
-        contacts={(contacts as Contact[]) ?? []}
-      />
-    </div>
+    <ContactsSection
+      horseId={horse.id}
+      contacts={(contacts as Contact[]) ?? []}
+    />
   );
 }
