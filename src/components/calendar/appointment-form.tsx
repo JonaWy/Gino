@@ -33,6 +33,7 @@ interface AppointmentFormProps {
   appointment?: Appointment;
   defaultDate?: string;
   suggestedCost?: number | null;
+  triggerClassName?: string;
 }
 
 export function AppointmentForm({
@@ -41,6 +42,7 @@ export function AppointmentForm({
   appointment,
   defaultDate,
   suggestedCost,
+  triggerClassName,
 }: AppointmentFormProps) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -73,7 +75,7 @@ export function AppointmentForm({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button size="sm">
+          <Button size="sm" className={triggerClassName}>
             <Plus />
             {isEdit ? "Bearbeiten" : "Neuer Termin"}
           </Button>

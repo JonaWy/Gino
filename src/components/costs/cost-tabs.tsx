@@ -1,5 +1,6 @@
 "use client";
 
+import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -9,6 +10,7 @@ import {
 } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
 import { EXPENSE_CATEGORY_LABELS } from "@/lib/labels";
+import { MonthCostSummaryCard } from "@/components/calendar/month-cost-summary";
 import { formatCurrency } from "@/lib/costs";
 import type { MonthCostSummary, CategoryStats } from "@/lib/costs";
 
@@ -31,10 +33,19 @@ export function CostTabs({
 }) {
   const forecast = summaries.filter((s) => s.isFuture && s.total > 0);
   const history = summaries.filter((s) => !s.isFuture && s.total > 0);
+  const currentMonthKey = format(new Date(), "yyyy-MM");
+  const currentMonth =
+    summaries.find((s) => s.month === currentMonthKey) ?? null;
+  const monthsWithCosts = summaries.filter(
+    (s) => s.total > 0 && s.month !== currentMonthKey
+  );
 
   return (
-    <Tabs defaultValue="prognose">
+    <Tabs defaultValue="monat">
       <TabsList className="w-full overflow-x-auto">
+        <TabsTrigger value="monat" className="min-w-[5.5rem]">
+          Monat
+        </TabsTrigger>
         <TabsTrigger value="prognose" className="min-w-[5.5rem]">
           Prognose
         </TabsTrigger>
@@ -45,6 +56,24 @@ export function CostTabs({
           Durchschnitte
         </TabsTrigger>
       </TabsList>
+
+      <TabsContent value="monat" className="flex flex-col gap-4">
+        <h3 className="text-base font-semibold">Monatsübersicht</h3>
+        {currentMonth ? (
+          <MonthCostSummaryCard summary={currentMonth} />
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Für diesen Monat liegen keine Daten vor.
+          </p>
+        )}
+        {monthsWithCosts.length > 0 && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {monthsWithCosts.map((s) => (
+              <MonthCostSummaryCard key={s.month} summary={s} />
+            ))}
+          </div>
+        )}
+      </TabsContent>
 
       <TabsContent value="prognose" className="flex flex-col gap-4">
         <Card>

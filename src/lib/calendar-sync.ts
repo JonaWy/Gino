@@ -3,9 +3,9 @@ import { HEALTH_RECORD_TYPE_LABELS } from "@/lib/labels";
 import { dateToEndsAt, dateToStartsAt } from "@/lib/appointment-dates";
 import { healthRecordToAppointmentType } from "@/lib/health-calendar";
 
-function trainingStatus(endDate: string): AppointmentStatus {
+function statusForDate(date: string): AppointmentStatus {
   const today = new Date().toISOString().slice(0, 10);
-  return endDate < today ? "erledigt" : "geplant";
+  return date < today ? "erledigt" : "geplant";
 }
 
 function healthDescription(
@@ -30,9 +30,10 @@ export function buildHealthDateAppointment(record: {
   notes: string | null;
 }) {
   const label = HEALTH_RECORD_TYPE_LABELS[record.type];
-  const title = record.product_name
-    ? `${label}: ${record.product_name} (durchgeführt)`
-    : `${label} (durchgeführt)`;
+  const status = statusForDate(record.date);
+  const done = status === "erledigt";
+  const base = record.product_name ? `${label}: ${record.product_name}` : label;
+  const title = done ? `${base} (durchgeführt)` : base;
 
   return {
     user_id: record.user_id,
@@ -43,9 +44,9 @@ export function buildHealthDateAppointment(record: {
     starts_at: dateToStartsAt(record.date),
     ends_at: null,
     all_day: true,
-    status: "erledigt" as const,
+    status,
     contact_id: record.contact_id,
-    reminder_days_before: null,
+    reminder_days_before: done ? null : 3,
   };
 }
 
@@ -80,7 +81,7 @@ export function buildTrainingAppointment(record: {
     ends_at:
       endDate !== record.date ? dateToEndsAt(endDate) : null,
     all_day: true,
-    status: trainingStatus(endDate),
+    status: statusForDate(endDate),
     contact_id: record.trainer_contact_id ?? record.rider_contact_id,
     reminder_days_before: null,
   };
@@ -116,7 +117,7 @@ export function buildTournamentAppointment(record: {
     starts_at: dateToStartsAt(record.date),
     ends_at: null,
     all_day: true,
-    status: trainingStatus(record.date),
+    status: statusForDate(record.date),
     contact_id: record.contact_id,
     reminder_days_before: null,
   };

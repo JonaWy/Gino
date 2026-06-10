@@ -18,6 +18,16 @@ import {
   daysInAppointment,
 } from "@/lib/appointment-dates";
 
+const APPOINTMENT_DOT_CLASS: Record<string, string> = {
+  impfung: "after:bg-emerald-500",
+  tierarzt: "after:bg-red-500",
+  schmied: "after:bg-amber-700",
+  turnier: "after:bg-yellow-500",
+  training: "after:bg-blue-500",
+  physiotherapie: "after:bg-violet-500",
+  sonstiges: "after:bg-gray-400",
+};
+
 function formatAppointmentWhen(appt: Appointment) {
   if (appt.all_day) {
     const { start, end } = appointmentDayRange(appt);
@@ -72,7 +82,7 @@ export function CalendarView({
   );
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] xl:items-start">
+    <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[minmax(0,38rem)_minmax(0,1fr)] xl:items-start">
       <Card className="py-0">
         <CardContent className="p-3 sm:p-5">
           <Calendar
@@ -80,22 +90,20 @@ export function CalendarView({
             selected={selected}
             onSelect={setSelected}
             locale={de}
-            className="w-full p-0 [--cell-size:clamp(2.5rem,11vw,4rem)] sm:[--cell-size:3.5rem]"
+            className="w-full p-0 [--cell-size:clamp(2.75rem,13vw,4.25rem)] sm:[--cell-size:3.75rem]"
             classNames={{
               root: "w-full",
-              month: "w-full gap-4",
-              month_caption: "h-10 text-base",
-              caption_label: "text-base font-semibold",
+              month: "flex w-full flex-col gap-4",
               weekdays: "grid w-full grid-cols-7",
               weekday: "text-sm font-medium",
-              week: "mt-1 grid w-full grid-cols-7",
-              day: "min-w-0 text-sm",
+              week: "mt-1.5 grid w-full grid-cols-7",
+              day: "relative min-w-0",
             }}
             modifiers={modifiers}
             modifiersClassNames={Object.fromEntries(
-              Object.entries(APPOINTMENT_TYPE_COLORS).map(([k, v]) => [
+              Object.entries(APPOINTMENT_DOT_CLASS).map(([k, dot]) => [
                 k,
-                `relative after:absolute after:bottom-1 after:left-1/2 after:size-1.5 after:-translate-x-1/2 after:rounded-full ${v}`,
+                `relative after:absolute after:bottom-1 after:left-1/2 after:size-1.5 after:-translate-x-1/2 after:rounded-full ${dot}`,
               ])
             )}
           />
@@ -113,7 +121,8 @@ export function CalendarView({
       </Card>
 
       <div className="flex min-w-0 flex-col gap-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="font-serif text-xl font-semibold">Terminübersicht</h2>
+        <div className="flex flex-col gap-3">
           <h3 className="text-base font-semibold">
             {selected
               ? format(selected, "EEEE, d. MMMM", { locale: de })
@@ -123,6 +132,7 @@ export function CalendarView({
             horseId={horseId}
             contacts={contacts}
             defaultDate={selected ? format(selected, "yyyy-MM-dd") : undefined}
+            triggerClassName="w-full justify-center sm:w-auto"
           />
         </div>
 
